@@ -15,4 +15,5 @@
 # BUILD
 *.o
 main
-*.tga
+output.tga
+*.dSYM
