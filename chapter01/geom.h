@@ -40,19 +40,19 @@ template <class T> struct Vector3 {
 	Vector3<T>& normalize(T l = 1) { *this = (*this) * (l/norm()); return *this; }
 
 	template <class > friend std::ostream& operator<<(std::ostream& s, Vector3<T>& v);
-}
+};
 
 typedef Vector2<int> Vector2i;
 typedef Vector2<float> Vector2f;
 typedef Vector3<int> Vector3i;
 typedef Vector3<float> Vector3f;
 
-template <class > std::ostream& operator<<(std::ostream& s, Vector2<T>& v) {
+template <class T> std::ostream& operator<<(std::ostream& s, Vector2<T>& v) {
 	s << "(" << v.x << "," << v.y << ")\n";
 	return s;
 }
 
-template <class > std::ostream& operator<<(std::ostream& s, Vector3<T>& v) {
+template <class T> std::ostream& operator<<(std::ostream& s, Vector3<T>& v) {
 	s << "(" << v.x << "," << v.y << "," << v.z << ")\n";
 	return s;
 }

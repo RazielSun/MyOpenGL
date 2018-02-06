@@ -1,9 +1,16 @@
+#include <vector>
 #include "tgaimage.h"
+#include "model.h"
 
 using namespace std;
 
+const int WIDTH = 800;
+const int HEIGHT = 800;
+
 const TGAColor white = TGAColor (255, 255, 255, 255);
 const TGAColor red   = TGAColor (255, 0,   0,   255);
+
+Model* model = nullptr;
 
 void draw_line (int x0, int y0, int x1, int y1, TGAImage& image, const TGAColor& color) {
 
@@ -46,13 +53,27 @@ void draw_line (int x0, int y0, int x1, int y1, TGAImage& image, const TGAColor&
 
 int main (int argc, char** argv) {
 
-	TGAImage image (100, 100, TGAImage::RGB);
-	for (int i = 0; i < 1000000; ++i) {
-		draw_line (13, 20, 80, 40, image, white);
-		draw_line (20, 13, 40, 80, image, red);
-		draw_line (80, 40, 13, 20, image, red);
+	model = new Model("obj/african_head.obj");
+
+	TGAImage image (WIDTH, HEIGHT, TGAImage::RGB);
+
+	int facesCount = model->GetFacesCount();
+	for (int f = 0; f < facesCount; ++f) {
+		vector<int> face = model->GetFace( f );
+		for (int i = 0; i < 3; ++i) {
+			Vector3f v0 = model->GetVertex( face[i] );
+			Vector3f v1 = model->GetVertex( face[(i+1)%3] );
+			int x0 = (v0.x + 1.0f) * WIDTH * 0.5f;
+			int y0 = (v0.y + 1.0f) * HEIGHT * 0.5f;
+			int x1 = (v1.x + 1.0f) * WIDTH * 0.5f;
+			int y1 = (v1.y + 1.0f) * HEIGHT * 0.5f;
+			draw_line (x0, y0, x1, y1, image, white);
+		}
 	}
+
 	image.flip_vertically ();
 	image.write_tga_file ("output.tga");
+
+	delete model;
 	return 0;
 }
