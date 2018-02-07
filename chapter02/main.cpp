@@ -1,16 +1,19 @@
 #include <vector>
 #include "tgaimage.h"
-#include "geom.h"
+#include "model.h"
+#include <cstdlib> // for rand
 
 using namespace std;
 
-const int WIDTH = 200;
-const int HEIGHT = 200;
+const int WIDTH = 800;
+const int HEIGHT = 800;
 
 const TGAColor white = TGAColor (255, 255, 255, 255);
 const TGAColor red   = TGAColor (255, 0,   0,   255);
 const TGAColor blue  = TGAColor (0, 0,   255,   255);
 const TGAColor green = TGAColor (0, 255,   0,   255);
+
+Model* model = nullptr;
 
 void draw_line (Vector2i v0, Vector2i v1, TGAImage& image, const TGAColor& color) {
 
@@ -64,7 +67,7 @@ void draw_triangle (Vector2i v0, Vector2i v1, Vector2i v2, TGAImage& image, cons
 	int secondH = v2.y - v1.y + 1;
 
 	for (int i = 0; i <= totalH; ++i) {
-		int secondPart = i >= partOneH;
+		int secondPart = i > partOneH || v0.y == v1.y;
 		int segmentH = secondPart ? secondH : oneH;
 		float ka = (float) i / totalH;
 		float kb = (float) (i - ((secondPart) ? (v1.y - v0.y) : 0 )) / segmentH;
@@ -72,55 +75,45 @@ void draw_triangle (Vector2i v0, Vector2i v1, Vector2i v2, TGAImage& image, cons
 		Vector2i B = secondPart ? (v1 + (v2-v1) * kb) : (v0 + (v1-v0) * kb);
 		if (A.x>B.x) swap(A, B);
 		for (int x = A.x; x <= B.x; ++x) {
-			image.set( x, v0.y + i, white );
+			image.set( x, v0.y + i, color );
 		}
 	}
-
-	// int segmentH = v1.y - v0.y + 1;
-
-	// for (int y = v0.y; y <= v1.y; ++y) {
-	// 	float ka = (float) (y - v0.y) / totalH;
-	// 	float kb = (float) (y - v0.y) / segmentH;
-	// 	Vector2i A = v0 + (v2-v0) * ka;
-	// 	Vector2i B = v0 + (v1-v0) * kb;
-	// 	if (A.x>B.x) swap(A, B);
-	// 	for (int x = A.x; x <= B.x; ++x) {
-	// 		image.set( x, y, white );
-	// 	}
-	// 	image.set (A.x, y, red);
-	// 	image.set (B.x, y, green);
-	// }
-
-	// segmentH = v2.y - v1.y + 1;
-
-	// for (int y = v1.y; y <= v2.y; ++y) {
-	// 	float ka = (float) (y - v0.y) / totalH;
-	// 	float kb = (float) (y - v1.y) / segmentH;
-	// 	Vector2i A = v0 + (v2-v0) * ka;
-	// 	Vector2i B = v1 + (v2-v1) * kb;
-	// 	if (A.x>B.x) swap(A, B);
-	// 	for (int x = A.x; x <= B.x; ++x) {
-	// 		image.set( x, y, white );
-	// 	}
-	// 	image.set (A.x, y, red);
-	// 	image.set (B.x, y, green);
-	// }
 }
 
 int main (int argc, char** argv) {
 
+	model = new Model("obj/african_head.obj");
+
 	TGAImage image (WIDTH, HEIGHT, TGAImage::RGB);
 
-	Vector2i t0[3] = {Vector2i(10, 70),   Vector2i(50, 160),  Vector2i(70, 80)};
-    Vector2i t1[3] = {Vector2i(180, 50),  Vector2i(150, 1),   Vector2i(70, 180)};
-    Vector2i t2[3] = {Vector2i(180, 150), Vector2i(120, 160), Vector2i(130, 180)};
+	Vector3f lightDir = Vector3f(0.0f, 0.0f, -1.0f);
 
-    draw_triangle (t0[0], t0[1], t0[2], image, red);
-    draw_triangle (t1[0], t1[1], t1[2], image, blue);
-    draw_triangle (t2[0], t2[1], t2[2], image, green);
+    int facesCount = model->GetFacesCount();
+	for (int f = 0; f < facesCount; ++f) {
+		vector<int> face = model->GetFace( f );
+		Vector2i screenPos[3];
+		Vector3f worldPos[3];
+
+		for (int i = 0; i < 3; ++i) {
+			Vector3f v = model->GetVertex( face[i] );
+			screenPos[i] = Vector2i((v.x + 1.0f) * WIDTH * 0.5f, (v.y + 1.0f) * HEIGHT * 0.5f);	
+			worldPos[i] = v;		
+		}
+
+		Vector3f normal = (worldPos[2]-worldPos[0])^(worldPos[1]-worldPos[0]);
+		normal.normalize();
+
+		float intensity = normal * lightDir;
+
+		if (intensity > 0) {
+			draw_triangle(screenPos[0], screenPos[1], screenPos[2], image, TGAColor(intensity*255, intensity*255, intensity*255, 255));
+		}
+		
+	}
 
 	image.flip_vertically ();
 	image.write_tga_file ("output.tga");
 
+	delete model;
 	return 0;
 }
