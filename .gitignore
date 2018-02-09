@@ -15,5 +15,10 @@
 # BUILD
 *.o
 main
-output.tga
 *.dSYM
+
+#####
+# IMAGES
+output.tga
+scene.tga
+render.tga
