@@ -26,8 +26,18 @@ template <class T> struct Vector3 {
 		T raw[3];
 	};
 
-	Vector3() : x(0), y(0), z(0) {}
-	Vector3(T _x, T _y, T _z) : x(_x), y(_y), z(_z) {}
+	Vector3<T>() : x(0), y(0), z(0) {}
+	Vector3<T>(T _x, T _y, T _z) : x(_x), y(_y), z(_z) {}
+	template <class U> Vector3<T>(const Vector3<U> &v);
+	Vector3<T>(const Vector3<T> &v): x(T()), y(T()), z(T()) { *this = v; }
+	Vector3<T>& operator =(const Vector3<T> &v) {
+		if (this != &v) {
+			x = v.x;
+			y = v.y;
+			z = v.z;
+		}
+		return *this;
+	}
 
 	inline Vector3<T> operator +(const Vector3<T> &v) const { return Vector3<T>( x+v.x, y+v.y, z+v.z ); }
 	inline Vector3<T> operator -(const Vector3<T> &v) const { return Vector3<T>( x-v.x, y-v.y, z-v.z ); }
@@ -46,6 +56,9 @@ typedef Vector2<int> Vector2i;
 typedef Vector2<float> Vector2f;
 typedef Vector3<int> Vector3i;
 typedef Vector3<float> Vector3f;
+
+template <> template <> Vector3<int>::Vector3(const Vector3<float> &v);
+template <> template <> Vector3<float>::Vector3(const Vector3<int> &v);
 
 template <class T> std::ostream& operator<<(std::ostream& s, Vector2<T>& v) {
 	s << "(" << v.x << "," << v.y << ")\n";
