@@ -4,18 +4,22 @@
 #include <cmath>
 
 template <class T> struct Vector2 {
-	union {
-		struct { T u, v; };
-		struct { T x, y; };
-		T raw[2];
-	};
+	T x, y;
 
-	Vector2() : u(0), v(0) {}
-	Vector2(T _u, T _v) : u(_u), v(_v) {}
+	Vector2<T>() : x(0), y(0) {}
+	Vector2<T>(T _x, T _y) : x(_x), y(_y) {}
+	Vector2<T>(const Vector2<T> &v) : x(T()), y(T()) { *this = v; }
+	Vector2<T>& operator =(const Vector2<T> &v) {
+		if (this!=&v) {
+			x = v.x;
+			y = v.y;
+		}
+		return *this;
+	}
 
-	inline Vector2<T> operator +(const Vector2<T> &vec) const { return Vector2<T>( u+vec.u, v+vec.v ); }
-	inline Vector2<T> operator -(const Vector2<T> &vec) const { return Vector2<T>( u-vec.u, v-vec.v ); }
-	inline Vector2<T> operator *(float f) const { return Vector2<T>( u*f, v*f ); }
+	inline Vector2<T> operator +(const Vector2<T> &v) const { return Vector2<T>( x+v.x, y+v.y ); }
+	inline Vector2<T> operator -(const Vector2<T> &v) const { return Vector2<T>( x-v.x, y-v.y ); }
+	inline Vector2<T> operator *(float f) const { return Vector2<T>( x*f, y*f ); }
 	template <class > friend std::ostream& operator<<(std::ostream& s, Vector2<T>& v);
 };
 
